@@ -15,3 +15,9 @@ cp admin.conf ~/.kube/.kubeconfig
 helm install -f nginx-helm-vars.yaml ingress-nginx ingress-nginx/ingress-nginx --kube-insecure-skip-tls-verify
 alias kubectl='kubectl --insecure-skip-tls-verify=true'
 kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+
+
+# кубернетес запускается в kind
+поднимается терраформ и страртует инит скрипт на виртуалке, который инсталит kubectl, docker, kind, создаёт кластер kind и устанавливает nginx-ingress
+
+нужно собрать докер имедж и запулить его на гитхаб
