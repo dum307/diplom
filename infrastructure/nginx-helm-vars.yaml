@@ -1,0 +1,16 @@
+controller:
+  tolerations:
+   - key: "node.kubernetes.io/ingress"
+     operator: "Exists"
+  #    value: "value"
+  #    effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
+  nodeSelector:
+    kubernetes.io/hostname: k8s-ingress-0
+  service:
+    type: NodePort
+    nodePorts:
+      http: 32080
+      https: 32443
+      tcp:
+        8080: 32808
+

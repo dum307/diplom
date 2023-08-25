@@ -1,0 +1,7 @@
+#terraform
+.terraform/
+*.terraform.lock.hcl
+
+kubespray/
+venv/
+inventory.ini

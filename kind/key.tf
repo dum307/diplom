@@ -1,0 +1,4 @@
+resource "aws_key_pair" "key" {
+  key_name   = "dum307_key"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+ijun9a+rrkdAkWNo9QWVuF3JBPYsp1TywgSwrWB5VYmysadvT6fQDleEqDz2Vd1XSTn2hUh1ozGMJ++LU7nVZ/SK60xD5sm4xD4sYmzn3b1Sc8piAsa+vM70gX9wJelJmQ/1sYjsLMxTsRLG72xWKsNJ6sZtbIt1CU9Rs0LyL+CU/RcDKu7d5GpbAnoLGWHsOpQOXzUkW1/vSfgiUsBYaGVuQ6gHIDMkFJaVV3ZuIh56t1mKPPPkhXwloSCo3Tn5HcmwAPPz5jLFiTrPL63jyue7zwUzVcyGXS1Agwz+tM0VMCauZJIpU9do5P3c9gb/4aSTiXQ9vmqBl5yjSUI9 ubuntu@s5"
+}
