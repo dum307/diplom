@@ -9,6 +9,8 @@ k8s-worker-${i} ansible_host=${ip} ip=${ip} etcd_member_name=etcd
 k8s-ingress-${i} ansible_host=${ip} ip=${ip} etcd_member_name=etcd
 %{ endfor ~}
 
+[bastion]
+bastion ansible_host=${bastion} ansible_user=ubuntu
 
 [kube_control_plane]
 %{ for i, ip in masters ~}

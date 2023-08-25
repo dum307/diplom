@@ -73,12 +73,14 @@ kube_network_plugin: flannel
 kube_network_plugin_multus: false
 
 # Kubernetes internal network for services, unused block of space.
-kube_service_addresses: {{ kube_service_addresses }}
+#kube_service_addresses: {{ kube_service_addresses }}
+kube_service_addresses: 10.0.0.0/18
 
 # internal network. When used, it will assign IP
 # addresses from this range to individual pods.
 # This network must be unused in your network infrastructure!
-kube_pods_subnet: {{ kube_pods_subnet }}
+#kube_pods_subnet: {{ kube_pods_subnet }}
+kube_pods_subnet: 10.0.64.0/18
 
 # internal network node size allocation (optional). This is the size allocated
 # to each node for pod IP address allocation. Note that the number of pods per node is
@@ -122,7 +124,8 @@ kube_apiserver_port: 6443  # (https)
 
 # Kube-proxy proxyMode configuration.
 # Can be ipvs, iptables
-kube_proxy_mode: {{ kube_proxy_mode }}
+#kube_proxy_mode: {{ kube_proxy_mode }}
+kube_proxy_mode: iptables
 
 # configure arp_ignore and arp_announce to avoid answering ARP queries from kube-ipvs0 interface
 # must be set to true for MetalLB, kube-vip(ARP enabled) to work
@@ -157,7 +160,8 @@ kube_encrypt_secret_data: false
 
 # DNS configuration.
 # Kubernetes cluster name, also will be used as DNS domain
-cluster_name: {{ cluster_name }}
+# cluster_name: {{ cluster_name }}
+cluster_name: cluster.local
 
 # Subdomains of DNS domain to be resolved via /etc/resolv.conf for hostnet pods
 ndots: 2
