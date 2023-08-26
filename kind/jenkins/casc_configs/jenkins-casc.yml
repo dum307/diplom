@@ -1,0 +1,43 @@
+jenkins:
+  systemMessage: "<div style='border-radius:10px; text-align: center; padding:20px; font-size:160%; background-color: tomato;'>Jenkins configured automatically by Jenkins Configuration as Code plugin</div><br>"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+  markupFormatter:
+    rawHtml:
+      disableSyntaxHighlighting: false
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      enableCaptcha: false
+      users:
+      - id: ${JENKINS_ADMIN_ID}
+        name: "admin"
+        password: ${JENKINS_ADMIN_PASSWORD}
+security:
+  gitHostKeyVerificationConfiguration:
+    sshHostKeyVerificationStrategy: "acceptFirstConnectionStrategy"
+  scriptApproval:
+    approvedSignatures:
+    - "method groovy.lang.GroovyObject invokeMethod java.lang.String java.lang.Object"
+    - "staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods getAt java.lang.Object\
+      \ java.lang.String"
+
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - usernamePassword:
+          id: "github-http"
+          password: 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
+          # password: ${GITHUB_PAT}
+          scope: GLOBAL
+          username: "dum307307@gmail.com"
+
+unclassified:
+  location:
+    url: ${JENKINS_URL}
+
+jobs:
+  - file: /var/jenkins_home/casc_configs/seedjob.groovy

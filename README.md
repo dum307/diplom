@@ -21,3 +21,5 @@ kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
 поднимается терраформ и страртует инит скрипт на виртуалке, который инсталит kubectl, docker, kind, создаёт кластер kind и устанавливает nginx-ingress
 
 нужно собрать докер имедж и запулить его на гитхаб
+
+создать секрет для гитхаба

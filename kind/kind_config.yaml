@@ -28,11 +28,14 @@ nodes:
     hostPort: 80
     protocol: TCP
 - role: worker
-  extraPortMappings:
-  - containerPort: 30100
-    hostPort: 30100
-    listenAddress: "127.0.0.1" # Optional, defaults to "0.0.0.0"
-    protocol: tcp # Optional, defaults to tcp
+  extraMounts:
+  - hostPath: /tmp/casc_configs
+    containerPath: /tmp/casc_configs
+  # extraPortMappings:
+  # - containerPort: 30100
+  #   hostPort: 30100
+  #   listenAddress: "127.0.0.1" # Optional, defaults to "0.0.0.0"
+  #   protocol: tcp # Optional, defaults to tcp
   kubeadmConfigPatches:
   - |
     kind: JoinConfiguration
@@ -40,6 +43,9 @@ nodes:
       kubeletExtraArgs:
         node-labels: "nodePort=true"
 - role: worker
+  extraMounts:
+  - hostPath: /tmp/casc_configs
+    containerPath: /tmp/casc_configs  
   # extraPortMappings:
   # - containerPort: 80
   #   hostPort: 80

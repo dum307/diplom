@@ -21,7 +21,7 @@ resource "aws_instance" "kind" {
     subnet_id = module.vpc.public_subnets[0]
     key_name = var.key_name
     #vpc_security_group_ids = [aws_security_group.allow_all.id, aws_security_group.allow_api.id, aws_security_group.allow_ssh.id, aws_security_group.allow_https.id, aws_security_group.allow_https_webhook.id]
-    vpc_security_group_ids = [aws_security_group.allow_http_ingress.id, aws_security_group.allow_api.id, aws_security_group.allow_ssh.id]
+    vpc_security_group_ids = [aws_security_group.allow_http_ingress.id, aws_security_group.allow_ssh.id]
     associate_public_ip_address = true
     tags = {
     Name = "kind"
@@ -40,11 +40,31 @@ resource "aws_instance" "kind" {
         host                = self.public_ip
     }
 
+    # copy kind config
     provisioner "file" {
         source      = "kind_config.yaml"
         destination = "/tmp/kind_config.yaml"
     }
 
+    # copy github secret
+    provisioner "file" {
+        source      = ".dockerconfigjson"
+        destination = "/tmp/.dockerconfigjson"
+    }
+
+    # copy jenkins casc config
+    provisioner "file" {
+        source      = "jenkins/casc_configs"
+        destination = "/tmp/casc_configs"
+    }
+
+    # copy config jenkins for deploy in k8s
+    provisioner "file" {
+        source      = "jenkins/jenkins-k8s.yaml"
+        destination = "/tmp/jenkins-k8s.yaml"
+    }
+
+    # start init script
     provisioner "remote-exec" {
         script = "./init.sh"
     }
