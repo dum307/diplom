@@ -18,6 +18,8 @@ kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
 
 
 # кубернетес запускается в kind
+закинуть ssh ключ в файл key.tf
+
 поднимается терраформ и страртует инит скрипт на виртуалке, который инсталит kubectl, docker, kind, создаёт кластер kind и устанавливает nginx-ingress
 
 нужно собрать докер имедж и запулить его на гитхаб

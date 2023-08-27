@@ -35,13 +35,15 @@ sudo kind create cluster --config /tmp/kind_config.yaml
 # install nginx ingress controller
 sudo kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 
-# create casc configs dir
-# mkdir /tmp/casc_configs  
-
 # create github secret
 sudo kubectl create namespace jenkins
 sudo kubectl -n jenkins create secret generic github --from-file=.dockerconfigjson=/tmp/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
 
+# create jenkins SA and get token
+sudo kubectl apply -f /tmp/jenkins-sa-k8s.yaml
+export JENKINS_SA_TOKEN=$(sudo kubectl -n jenkins get secret jenkins-sa-token -o jsonpath='{.data.token}' | base64 --decode)
+export GITHUB_PAT=$(cat .token)
+
 # install jenkins
 sleep 60
-sudo kubectl apply -f /tmp/jenkins-k8s.yaml
+envsubst < /tmp/jenkins-k8s.yaml | sudo kubectl apply -f -

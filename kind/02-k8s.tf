@@ -52,10 +52,20 @@ resource "aws_instance" "kind" {
         destination = "/tmp/.dockerconfigjson"
     }
 
+    # provisioner "local-exec" {
+    #     command = "sed -i 's/IP/${aws_instance.kind.private_ip}/g' jenkins/casc_configs/kubernetes-clod.yaml"
+    # }
+
     # copy jenkins casc config
     provisioner "file" {
         source      = "jenkins/casc_configs"
         destination = "/tmp/casc_configs"
+    }
+
+    # copy config jenkins for deploy in k8s
+    provisioner "file" {
+        source      = "jenkins/jenkins-sa-k8s.yaml"
+        destination = "/tmp/jenkins-sa-k8s.yaml"
     }
 
     # copy config jenkins for deploy in k8s

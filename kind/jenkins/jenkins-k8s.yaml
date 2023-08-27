@@ -32,8 +32,12 @@ spec:
     app: jenkins-server
   type: ClusterIP
   ports:
-    - port: 8080
+    - name: http-port
+      port: 8080
       targetPort: 8080
+    - name: jnlp-port  
+      port: 50000
+      targetPort: 50000
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -62,14 +66,18 @@ spec:
           env:
           - name: JAVA_OPTS 
             value: "-Djenkins.install.runSetupWizard=false"
-          # - name: CASC_JENKINS_CONFIG
-          #   value: "/var/jenkins_home/casc_configs"
+          - name: CASC_JENKINS_CONFIG
+            value: "/var/jenkins_home/casc_configs"
           - name: JENKINS_ADMIN_ID
             value: "admin"
           - name: JENKINS_ADMIN_PASSWORD
-            value: "admin"
+            value: "!QAZ2wsx"
           - name: JENKINS_URL
             value: "http://jenkins"
+          - name: JENKINS_SA_TOKEN
+            value: "${JENKINS_SA_TOKEN}"
+          - name: GITHUB_PAT
+            value: "${GITHUB_PAT}"
             # DOCKER_HOST: tcp://jenkins-docker:2375
             # DOCKER_CERT_PATH: ""
             # DOCKER_TLS_VERIFY: ""
