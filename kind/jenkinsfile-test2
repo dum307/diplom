@@ -1,0 +1,86 @@
+pipeline {
+  agent none
+
+  stages {
+    stage('BUILD') {
+      parallel {
+        stage ('BUILD-productcatalogue') {
+          agent {
+            kubernetes {
+              yaml """
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: IfNotPresent
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: jenkins-docker-cfg
+        mountPath: /kaniko/.docker
+  volumes:
+  - name: jenkins-docker-cfg
+    projected:
+      sources:
+      - secret:
+          name: github
+          items:
+            - key: .dockerconfigjson
+              path: config.json
+"""
+            }
+          }
+          steps {
+            container(name: 'kaniko') {
+                sh '''
+  /kaniko/executor --dockerfile=apps/productcatalogue/Dockerfile-build --context=apps/productcatalogue/ --destination=ghcr.io/dum307/productcatalogue:v2 --ignore-path=/product_uuid
+                '''
+            }
+          }
+        }
+        stage ('BUILD-shopfront') {
+          agent {
+            kubernetes {
+              yaml """
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: IfNotPresent
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: jenkins-docker-cfg
+        mountPath: /kaniko/.docker
+  volumes:
+  - name: jenkins-docker-cfg
+    projected:
+      sources:
+      - secret:
+          name: github
+          items:
+            - key: .dockerconfigjson
+              path: config.json
+"""
+            }
+          }
+          steps {
+            container(name: 'kaniko') {
+                sh '''
+  /kaniko/executor --dockerfile=apps/shopfront/Dockerfile-build --context=apps/shopfront/ --destination=ghcr.io/dum307/shopfront:v2 --ignore-path=/product_uuid
+                '''
+            }
+          }
+        }
+      }
+    }
+  }
+}

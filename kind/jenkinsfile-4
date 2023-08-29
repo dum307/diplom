@@ -16,15 +16,13 @@ def stagePrepare(flag, apps, parallel_count) {
 def stageBuildCreate(app, path, lock_id) {
     return {
         stage(app) {
-            lock("Build-lock-${lock_id}") {
-                agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
-                steps {
-                    container(name: 'kaniko') {
-                        sh """
-    /kaniko/executor --dockerfile=${path}/Dockerfile-build --context=${path}/ --destination=ghcr.io/dum307/${app}:3.0 --ignore-path=/product_uuid
-                        """
-                        builtApps.put(app, path)
-                    }
+            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+            steps {
+                container(name: 'kaniko') {
+                    sh """
+/kaniko/executor --dockerfile=${path}/Dockerfile-build --context=${path}/ --destination=ghcr.io/dum307/${app}:5.0--ignore-path=/product_uuid
+                    """
+                    builtApps.put(app, path)
                 }
             }
         }
@@ -45,7 +43,7 @@ def stageImageCreate(app, path, lock_id) {
 
 
 pipeline {
-    agent none
+    agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
@@ -73,15 +71,15 @@ pipeline {
             }
         }
 
-        stage ('Parallel build') {
-            steps {
-                script {
-                    buildStages.each { stage ->
-                        parallel stage
-                    }
-                }
-            }
-        }
+        // stage ('Parallel build') {
+        //     steps {
+        //         script {
+        //             buildStages.each { stage ->
+        //                 stage
+        //             }
+        //         }
+        //     }
+        // }
 
         // stage ('Parallel create image') {
         //     steps {

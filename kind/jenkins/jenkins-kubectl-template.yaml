@@ -1,0 +1,18 @@
+kind: Pod
+metadata:
+  name: kubectl
+spec:
+  containers:
+  - name: kubectl
+    image: alpine/k8s:1.27.5
+    imagePullPolicy: IfNotPresent
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: kube-config
+        mountPath: /root/.kube/
+  volumes:
+    - name: kube-config
+      secret:
+        secretName: kube-config-secret

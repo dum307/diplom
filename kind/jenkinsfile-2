@@ -16,7 +16,7 @@ def stagePrepare(flag, apps, parallel_count) {
 def stageBuildCreate(app, path, lock_id) {
     return {
         stage(app) {
-            lock("Build-lock-${lock_id}") {
+            //lock("Build-lock-${lock_id}") {
                 agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
                 steps {
                     container(name: 'kaniko') {
@@ -26,7 +26,7 @@ def stageBuildCreate(app, path, lock_id) {
                         builtApps.put(app, path)
                     }
                 }
-            }
+            //}
         }
     }
 }
@@ -67,21 +67,49 @@ pipeline {
                     println (apps)
                     Integer PARALLEL_EXECUTE_COUNT = 2
                     buildStages = stagePrepare('build', apps, PARALLEL_EXECUTE_COUNT)
-                    println (buildStages)
                     builtApps = [:]
                 }
             }
         }
 
-        stage ('Parallel build') {
-            steps {
-                script {
-                    buildStages.each { stage ->
-                        parallel stage
+
+        stage('BUILD') {
+            parallel {
+                stage ('BUILD-productcatalogue') {
+                    agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+                    steps {
+                        container(name: 'kaniko') {
+                            sh '''
+            /kaniko/executor --dockerfile=apps/productcatalogue/Dockerfile-build --context=apps/productcatalogue/ --destination=ghcr.io/dum307/productcatalogue:v4.0 --ignore-path=/product_uuid
+                            '''
+                        }
+                    }
+                }
+                stage ('BUILD-shopfront') {
+                agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+                    steps {
+                        container(name: 'kaniko') {
+                            sh '''
+            /kaniko/executor --dockerfile=apps/shopfront/Dockerfile-build --context=apps/shopfront/ --destination=ghcr.io/dum307/shopfront:v4.0 --ignore-path=/product_uuid
+                            '''
+                        }
                     }
                 }
             }
         }
+
+
+
+
+        // stage ('Parallel build') {
+        //     steps {
+        //         script {
+        //             buildStages.each { stage ->
+        //                 parallel stage
+        //             }
+        //         }
+        //     }
+        // }
 
         // stage ('Parallel create image') {
         //     steps {

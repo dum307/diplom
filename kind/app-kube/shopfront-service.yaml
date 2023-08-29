@@ -29,9 +29,11 @@ spec:
       labels:
         app: shopfront
     spec:
+      imagePullSecrets:
+      - name: github
       containers:
       - name: djshopfront
-        image: danielbryantuk/djshopfront:latest
+        image: ghcr.io/dum307/shopfront:v4.4
         ports:
         - containerPort: 8010
         livenessProbe:

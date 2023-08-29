@@ -28,9 +28,11 @@ spec:
       labels:
         app: productcatalogue
     spec:
+      imagePullSecrets:
+      - name: github
       containers:
       - name: productcatalogue
-        image: danielbryantuk/djproductcatalogue:latest
+        image: ghcr.io/dum307/productcatalogue:v4.4
         ports:
         - containerPort: 8020
         livenessProbe:

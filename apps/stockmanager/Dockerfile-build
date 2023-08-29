@@ -1,0 +1,9 @@
+FROM maven:3.8.6-openjdk-11 as builder
+WORKDIR /app
+COPY . .
+RUN mvn -B -DskipTests clean install
+
+FROM openjdk:8-jre
+COPY --from=builder /app/target/stockmanager-0.0.1-SNAPSHOT.jar app.jar
+EXPOSE 8030
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]

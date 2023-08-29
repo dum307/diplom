@@ -1,0 +1,50 @@
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: IfNotPresent
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: jenkins-docker-cfg
+        mountPath: /kaniko/.docker
+  volumes:
+  - name: jenkins-docker-cfg
+    projected:
+      sources:
+      - secret:
+          name: github
+          items:
+            - key: .dockerconfigjson
+              path: config.json
+"""
+        }
+    }
+
+    stages {
+        stage('BUILD') {
+            steps {
+                container(name: 'kaniko') {
+                    sh '''
+/kaniko/executor --dockerfile=apps/productcatalogue/Dockerfile-build --context=apps/productcatalogue/ --destination=ghcr.io/dum307/productcatalogue:v1.2 --ignore-path=/product_uuid
+                    '''
+                }
+            }
+        }
+
+        // stage('DEPLOY') {
+        //     steps {
+        //       kubernetesDeploy configs: 'deployment/00-acc.yaml', kubeConfig: [path: ''], kubeconfigId: 'cube-conf-admin', secretName: '', ssh: [sshCredentialsId: '*', sshServer: ''], textCredentials: [certificateAuthorityData: '', clientCertificateData: '', clientKeyData: '', serverUrl: 'https://']
+        //       kubernetesDeploy configs: 'deployment/01-deployment.yaml', kubeConfig: [path: ''], kubeconfigId: 'cube-conf-admin', secretName: '', ssh: [sshCredentialsId: '*', sshServer: ''], textCredentials: [certificateAuthorityData: '', clientCertificateData: '', clientKeyData: '', serverUrl: 'https://']
+        //     }
+        // }
+    }
+}

@@ -29,9 +29,11 @@ spec:
       labels:
         app: stockmanager
     spec:
+      imagePullSecrets:
+      - name: github
       containers:
       - name: stockmanager
-        image: danielbryantuk/djstockmanager:latest
+        image: ghcr.io/dum307/stockmanager:v4.4
         ports:
         - containerPort: 8030
         livenessProbe:
