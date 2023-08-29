@@ -1,9 +1,10 @@
-clouds:
-  - kubernetes:
-      credentialsId: "jenkins-sa-token"
-      jenkinsTunnel: "jenkins-service:50000"
-      jenkinsUrl: "http://jenkins-service:8080"
-      name: "kubernetes"
-      namespace: "jenkins"
-      serverUrl: "https://kubernetes.default.svc"
-      skipTlsVerify: true
+jenkins:
+  clouds:
+    - kubernetes:
+        credentialsId: "jenkins-sa-token"
+        jenkinsTunnel: "jenkins-service:50000"
+        jenkinsUrl: "http://jenkins-service:8080"
+        name: "kubernetes"
+        namespace: "jenkins"
+        serverUrl: "https://kubernetes.default.svc"
+        skipTlsVerify: true

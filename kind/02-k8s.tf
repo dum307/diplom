@@ -52,6 +52,12 @@ resource "aws_instance" "kind" {
         destination = "/tmp/.dockerconfigjson"
     }
 
+    # copy github token
+    provisioner "file" {
+        source      = ".token"
+        destination = "/tmp/.token"
+    }
+
     # provisioner "local-exec" {
     #     command = "sed -i 's/IP/${aws_instance.kind.private_ip}/g' jenkins/casc_configs/kubernetes-clod.yaml"
     # }
