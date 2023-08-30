@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-app
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+  - http:
+      paths:
+      - pathType: Prefix
+        path: {{ .Values.ingress.shopfront.path }}
+        backend:
+          service:
+            name: shopfront
+            port:
+              number: {{ .Values.service.shopfront.port }}
+      - pathType: Prefix
+        path: {{ .Values.ingress.productcatalogue.path }}
+        backend:
+          service:
+            name: productcatalogue
+            port:
+              number: {{ .Values.service.productcatalogue.port }}
+      - pathType: Prefix
+        path: {{ .Values.ingress.stockmanager.path }}
+        backend:
+          service:
+            name: stockmanager
+            port:
+              number: {{ .Values.service.stockmanager.port }}
+              
