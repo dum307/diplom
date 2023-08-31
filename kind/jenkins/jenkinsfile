@@ -45,7 +45,8 @@
 
 
 pipeline {
-    agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+    //agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+    agent none
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
@@ -60,52 +61,124 @@ pipeline {
     }
 
     stages {
-        // stage('Prepare') {
-        //     //agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
-        //     steps {
-        //         script {
-        //             apps = readJSON file: SERVICES_FILE
-        //             println (apps)
-        //             Integer PARALLEL_EXECUTE_COUNT = 2
-        //             buildStages = stagePrepare('build', apps, PARALLEL_EXECUTE_COUNT)
-        //             builtApps = [:]
-        //         }
-        //     }
-        // }
+        stage('Prepare') {
+            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+            steps {
+                script {
+                    apps = readJSON file: SERVICES_FILE
+                    println (apps)
+                    // Integer PARALLEL_EXECUTE_COUNT = 2
+                    // buildStages = stagePrepare('build', apps, PARALLEL_EXECUTE_COUNT)
+                    // builtApps = [:]
+                }
+            }
+        }
 
-//         stage('BUILD-productcatalogue') {
+
+// Стэйдж сделан на случай, когда не хватает ресурсов на виртуалке, чтобы не поднимались новые поды, а всё сделалось на одной
+
+//         stage('BUILD-ALL') {
 //             agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
 //             steps {
 //                 container(name: 'kaniko') {
 //                     sh '''
 // /kaniko/executor --dockerfile=apps/productcatalogue/Dockerfile-build --context=apps/productcatalogue/ --destination=ghcr.io/dum307/productcatalogue:v${BUILD_NUMBER} --ignore-path=/product_uuid
-//                     '''
-//                 }
-//             }
-//         }
-
-//         stage('BUILD-shopfront') {
-//             agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
-//             steps {
-//                 container(name: 'kaniko') {
-//                     sh '''
+// sleep 15
 // /kaniko/executor --dockerfile=apps/shopfront/Dockerfile-build --context=apps/shopfront/ --destination=ghcr.io/dum307/shopfront:v${BUILD_NUMBER} --ignore-path=/product_uuid
+// sleep 15
+// /kaniko/executor --dockerfile=apps/stockmanager/Dockerfile-build --context=apps/stockmanager/ --destination=ghcr.io/dum307/stockmanager:v${BUILD_NUMBER} --ignore-path=/product_uuid
+// sleep 15
 //                     '''
 //                 }
 //             }
 //         }
 
-//         stage('BUILD-stockmanager') {
+
+//         stage('docker build') {
 //             agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
 //             steps {
-//                 container(name: 'kaniko') {
-//                     sh '''
-// /kaniko/executor --dockerfile=apps/stockmanager/Dockerfile-build --context=apps/stockmanager/ --destination=ghcr.io/dum307/stockmanager:v${BUILD_NUMBER} --ignore-path=/product_uuid
-//                     '''
+//                 script {
+//                     apps.each { app, path ->
+//                         container(name: 'kaniko', image: 'gcr.io/kaniko-project/executor:latest') {
+//                                 sh '''
+// /kaniko/executor --dockerfile=apps/${app}/Dockerfile-build --context=apps/${app}/ --destination=ghcr.io/dum307/${app}:v${BUILD_NUMBER} --ignore-path=/product_uuid
+//                                 '''
+//                         }
+//                     }
 //                 }
 //             }
 //         }
+
+
+        stage('BUILD-productcatalogue') {
+            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+            steps {
+                container(name: 'kaniko') {
+                    sh '''
+sleep 30
+/kaniko/executor --dockerfile=apps/productcatalogue/Dockerfile-build --context=apps/productcatalogue/ --destination=ghcr.io/dum307/productcatalogue:v${BUILD_NUMBER} --ignore-path=/product_uuid
+                    '''
+                }
+            }
+        }
+
+        stage('Delay-1') {
+            agent none
+            steps {
+                script {
+                    def delaySeconds = 60
+                    echo "Waiting for ${delaySeconds} seconds..."
+                    sleep time: delaySeconds, unit: 'SECONDS'
+                }
+            }
+        }
+
+        stage('BUILD-shopfront') {
+            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+            steps {
+                container(name: 'kaniko') {
+                    sh '''
+sleep 30
+/kaniko/executor --dockerfile=apps/shopfront/Dockerfile-build --context=apps/shopfront/ --destination=ghcr.io/dum307/shopfront:v${BUILD_NUMBER} --ignore-path=/product_uuid
+                    '''
+                }
+            }
+        }
+
+        stage('Delay-2') {
+            agent none
+            steps {
+                script {
+                    def delaySeconds = 60
+                    echo "Waiting for ${delaySeconds} seconds..."
+                    sleep time: delaySeconds, unit: 'SECONDS'
+                }
+            }
+        }
+
+        stage('BUILD-stockmanager') {
+            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+            steps {
+                container(name: 'kaniko') {
+                    sh '''
+sleep 30
+/kaniko/executor --dockerfile=apps/stockmanager/Dockerfile-build --context=apps/stockmanager/ --destination=ghcr.io/dum307/stockmanager:v${BUILD_NUMBER} --ignore-path=/product_uuid
+                    '''
+                }
+            }
+        }
     
+
+        stage('Delay-3') {
+            agent none
+            steps {
+                script {
+                    def delaySeconds = 60
+                    echo "Waiting for ${delaySeconds} seconds..."
+                    sleep time: delaySeconds, unit: 'SECONDS'
+                }
+            }
+        }
 
         stage('Helm list') {
             agent { kubernetes { yamlFile 'kind/jenkins/jenkins-kubectl-template.yaml' } }
@@ -145,9 +218,9 @@ pipeline {
                 script {
                     container(name: 'kubectl') {
                         if (IS_CHART_RELEASED) {
-                            sh "helm upgrade ${RELEASE_NAME} app-chart/ --set image.tag=v9"
+                            sh "helm upgrade ${RELEASE_NAME} app-chart/ -n ${env.BRANCH_NAME} --set image.tag=v${BUILD_NUMBER}"
                         } else {
-                            sh "helm install ${RELEASE_NAME} app-chart/ --set image.tag=v9"
+                            sh "helm install ${RELEASE_NAME} app-chart/ -n ${env.BRANCH_NAME} --set image.tag=v${BUILD_NUMBER}"
                         }
                     }
                 }             
@@ -168,9 +241,9 @@ pipeline {
         // }
 
     }
-    post {
-        always {
-            cleanWs()
-        }
-    }
+    // post {
+    //     always {
+    //         cleanWs()
+    //     }
+    // }
 }

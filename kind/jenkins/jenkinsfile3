@@ -1,0 +1,158 @@
+podYaml= """
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: IfNotPresent
+    command:
+    - cat
+    tty: true
+    volumeMounts:
+      - name: jenkins-docker-cfg
+        mountPath: /kaniko/.docker
+  volumes:
+  - name: jenkins-docker-cfg
+    projected:
+      sources:
+      - secret:
+          name: github
+          items:
+            - key: .dockerconfigjson
+              path: config.json
+"""
+
+def generateStage(app, path, parallel_count, jobIndex) {
+    Integer lock_id = jobIndex % parallel_count
+    return {
+        stage(app) {
+            lock("Build-lock-${lock_id}") {
+                podTemplate(yaml:podYaml)  {
+                    node(POD_LABEL) {
+                        container(name: 'kaniko') {
+                            checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[credentialsId: 'github-http', url: 'https://github.com/dum307/diplom.git']]])
+                            // Each execution runs on its own node (pod)
+                            sh """
+                            /kaniko/executor --dockerfile=${path}/Dockerfile-build --context=${path}/ --destination=ghcr.io/dum307/${app}:v${BUILD_NUMBER} --ignore-path=/product_uuid
+                            sleep 30
+                            """
+                        }
+                    }
+                }
+            }    
+        }
+    }
+}
+
+
+pipeline {
+    agent { label 'master' }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+        disableConcurrentBuilds()
+        timestamps()
+        // ansiColor('xtrem')
+    }
+
+    environment {
+        // SERVICES_FILE = 'apps/services.json'
+        RELEASE_NAME = "app"
+        TG_TOKEN = credentials('TG_TOKEN')
+        TG_CHAT_ID = credentials('TG_CHAT_ID')
+    }
+
+
+    // stages {
+    //     stage('Create List of Stages to run in Parallel') {
+    //         steps {
+    //             sh "echo HEllO FROM JENKINS"
+    //         }
+    //     }
+
+    stages {
+        // stage('Create List of Stages to run in Parallel') {
+        //     steps {
+        //         script {
+        //             Integer PARALLEL_EXECUTE_COUNT = 1
+        //             def apps = readFile('apps/apps.json')
+        //             def map = readJSON text: apps
+        //             //def map = ["productcatalogue" : "apps/productcatalogue" ,"shopfront" : "apps/shopfront", "stockmanager" : "apps/stockmanager"]
+        //             parallel map.collectEntries { key, value ->
+        //                 ["${key}" : generateStage(key, value, PARALLEL_EXECUTE_COUNT, map.keySet().toList().indexOf(key))]
+        //             }
+        //         }
+        //     }
+        // }
+
+
+        stage('Helm list') {
+            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-kubectl-template.yaml' } }
+            steps {
+                script {
+                    container(name: 'kubectl') {
+                        IS_CHART_RELEASED = false
+                        log = sh(returnStdout: true, script: "helm list --no-headers").trim()
+                        println log
+                        log.readLines().collect { line ->
+                            if (line =~ RELEASE_NAME) {
+                                IS_CHART_RELEASED = true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        stage('Telegram message') {
+            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+            steps {
+                sh '''
+                curl -s -X POST https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID} --data-urlencode text="Need your approve"
+                '''
+            }
+        }
+
+        stage('Helm install') {
+            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-kubectl-template.yaml' } }
+            steps {
+                timeout(time: 15, unit: "MINUTES") {
+                    input message: "Confirm plan?", ok: "Apply"
+                }
+                script {
+                    container(name: 'kubectl') {
+                        if (IS_CHART_RELEASED) {
+                            sh "helm upgrade ${RELEASE_NAME} app-chart/ -n ${BRANCH_NAME} --set image.tag=v${BUILD_NUMBER}"
+                        } else {
+                            sh "helm install ${RELEASE_NAME} app-chart/ -n ${BRANCH_NAME} --set image.tag=v${BUILD_NUMBER}"
+                        }
+                    }
+                }        
+            }
+        }
+
+    }
+    post {
+        always {
+            cleanWs()
+        }
+        success {
+            sh '''
+            curl -s -X POST https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID} --data-urlencode text="Application deployed"
+            '''
+        }
+        aborted {
+            sh '''
+            curl -s -X POST https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID} --data-urlencode text="Application deploy aborted"
+            '''
+        }
+        failure {
+            sh '''
+            curl -s -X POST https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID} --data-urlencode text="Something wrong"
+            '''
+        }
+    }
+}

@@ -38,6 +38,10 @@ sudo kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx
 # create github secret
 sudo kubectl create namespace jenkins
 sudo kubectl -n jenkins create secret generic github --from-file=.dockerconfigjson=/tmp/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
+sudo kubectl create namespace main
+sudo kubectl -n main create secret generic github --from-file=.dockerconfigjson=/tmp/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
+sudo kubectl create namespace dev
+sudo kubectl -n dev create secret generic github --from-file=.dockerconfigjson=/tmp/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
 
 # create config file for jenkins pod
 sudo bash -c "mkdir /root/.kube/jenkins/ && cp /root/.kube/config /root/.kube/jenkins/config && sed -i 's#https://0.0.0.0:6443#https://kubernetes.default.svc#g' /root/.kube/jenkins/config"
@@ -47,6 +51,8 @@ sudo kubectl -n jenkins create secret generic kube-config-secret --from-file=/ro
 sudo kubectl apply -f /tmp/jenkins-sa-k8s.yaml
 export JENKINS_SA_TOKEN=$(sudo kubectl -n jenkins get secret jenkins-sa-token -o jsonpath='{.data.token}' | base64 --decode)
 export GITHUB_PAT=$(cat .token)
+export TG_TOKEN=$(cat .tg_token)
+export TG_CHAT_ID=$(cat .tg_chat_id)
 
 # install jenkins
 sleep 60

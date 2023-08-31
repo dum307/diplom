@@ -1,5 +1,5 @@
 {
     "productcatalogue" : "apps/productcatalogue",
     "shopfront" : "apps/shopfront",
-    "stockmanager" : "apps/shopfront"
+    "stockmanager" : "apps/stockmanager"
 }

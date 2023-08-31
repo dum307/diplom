@@ -1,0 +1,39 @@
+# prometheus config
+prometheus:
+  ingress:
+    enabled: true
+    hosts:
+      - prometheus
+    paths:
+      - /
+  prometheusSpec:
+    additionalScrapeConfigs: |
+      - job_name: 'app'
+        static_configs:
+          - targets:
+            - 'shopfront.main.svc.cluster.local:8010'
+            - 'productcatalogue.main.svc.cluster.local:8020'
+            - 'stockmanager.main.svc.cluster.local:8030'
+  
+      - job_name: 'blackbox'
+        metrics_path: /probe
+        params:
+          module: [http_2xx]
+        static_configs:
+          - targets:
+            - http://shopfront.main.svc.cluster.local:8010/
+            - http://productcatalogue.main.svc.cluster.local:8020/products
+            - http://stockmanager.main.svc.cluster.local:8030/stocks
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: blackbox-prometheus-blackbox-exporter.monitoring.svc.cluster.local:9115
+
+alertmanager:
+  enabled: false
+
+grafana:
+  enabled: false

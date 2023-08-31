@@ -21,6 +21,7 @@ kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
 перед запуском:
 закинуть ssh ключ в файл key.tf
 создать файлик .token с токеном от гитхаба
+создать два файлика .tg_token и .tg_chat_id - токен и чат id телеграма 
 создать секрет для гитхаба для скачивания из докер реестра
 
 
@@ -29,3 +30,11 @@ kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
 
 нужно собрать докер имедж и запулить его на гитхаб
 
+
+установка prometheus и blackbox exporter: (не устанавливаю, так как не хватает ресурсов виртуалки)
+```
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install -f prometheus.yaml prometheus prometheus-community/kube-prometheus-stack -n monitoring
+helm install -f blackbox.yaml blackbox prometheus-community/prometheus-blackbox-exporter -n monitoring
+```

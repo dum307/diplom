@@ -5,3 +5,10 @@
 #github token
 .token
 .dockerconfigjson
+
+#telegram
+.tg_chat_id
+.tg_token
+
+#k8s secrets file
+jenkins-secret.yaml

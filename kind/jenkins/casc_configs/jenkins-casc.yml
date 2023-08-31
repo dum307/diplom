@@ -7,6 +7,7 @@ jenkins:
     rawHtml:
       disableSyntaxHighlighting: false
   numExecutors: 2
+  labelString: "master"
   securityRealm:
     local:
       allowsSignup: false
@@ -38,10 +39,20 @@ credentials:
           id: "jenkins-sa-token"
           scope: GLOBAL
           secret: ${JENKINS_SA_TOKEN}
+      - string:
+          description: "telegram token"
+          id: "TG_TOKEN"
+          scope: GLOBAL
+          secret: ${TG_TOKEN}
+      - string:
+          description: "telegram chat id"
+          id: "TG_CHAT_ID"
+          scope: GLOBAL
+          secret: ${TG_CHAT_ID}
 
 unclassified:
   location:
     url: ${JENKINS_URL}
 
 jobs:
-  - file: /var/jenkins_home/casc_configs/seedjob.groovy
+  - file: /var/jenkins_home/casc_configs/seedjob2.groovy

@@ -58,9 +58,17 @@ resource "aws_instance" "kind" {
         destination = "/tmp/.token"
     }
 
-    # provisioner "local-exec" {
-    #     command = "sed -i 's/IP/${aws_instance.kind.private_ip}/g' jenkins/casc_configs/kubernetes-clod.yaml"
-    # }
+    # copy telegram token
+    provisioner "file" {
+        source      = ".tg_token"
+        destination = "/tmp/.tg_token"
+    }
+
+    # copy telegram chat id
+    provisioner "file" {
+        source      = ".tg_chat_id"
+        destination = "/tmp/.tg_chat_id"
+    }
 
     # copy jenkins casc config
     provisioner "file" {
@@ -78,6 +86,12 @@ resource "aws_instance" "kind" {
     provisioner "file" {
         source      = "jenkins/jenkins-k8s.yaml"
         destination = "/tmp/jenkins-k8s.yaml"
+    }
+
+    # copy prometeus config
+    provisioner "file" {
+        source      = "../prometheus"
+        destination = "/tmp/prometheus"
     }
 
     # start init script

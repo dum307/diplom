@@ -2,7 +2,7 @@ folder('diplom') {
     description('<div style="border-radius:10px; text-align: center; font-size:120%; padding:15px; background-color: powderblue;">Simple app CI/CD</div>')
 }
 
-multibranchPipelineJob('diplom/CI-CD') {
+multibranchPipelineJob('Lesson38/CI') {
     branchSources {
         branchSource {
             source {
@@ -24,7 +24,7 @@ multibranchPipelineJob('diplom/CI-CD') {
                             strategyId(1)
                         }
                         headWildcardFilter {
-                            includes('main PR-* dev')
+                            includes('main')
                             excludes('')
                         }
                         cloneOption {
@@ -49,10 +49,10 @@ multibranchPipelineJob('diplom/CI-CD') {
           	scriptPath('kind/jenkins/jenkinsfile')
         }
     }
-    // triggers {
-    //     // The maximum amount of time since the last indexing that is allowed to elapse before an indexing is triggered.
-    //     periodicFolderTrigger {
-    //         interval('1m')
-    //     }
-    // }
+    triggers {
+        // The maximum amount of time since the last indexing that is allowed to elapse before an indexing is triggered.
+        periodicFolderTrigger {
+            interval('1m')
+        }
+    }
 }
