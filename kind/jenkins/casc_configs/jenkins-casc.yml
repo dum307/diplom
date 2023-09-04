@@ -15,7 +15,7 @@ jenkins:
       users:
       - id: ${JENKINS_ADMIN_ID}
         name: "admin"
-        password: ${JENKINS_ADMIN_PASSWORD}
+        password: ${JENKINS_PASSWORD}
 security:
   gitHostKeyVerificationConfiguration:
     sshHostKeyVerificationStrategy: "acceptFirstConnectionStrategy"
@@ -31,7 +31,7 @@ credentials:
     - credentials:
       - usernamePassword:
           id: "github-http"
-          password: ${GITHUB_PAT}
+          password: ${GITHUB_TOKEN}
           scope: GLOBAL
           username: "dum307307@gmail.com"
       - string:

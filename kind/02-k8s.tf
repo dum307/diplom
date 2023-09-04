@@ -46,29 +46,35 @@ resource "aws_instance" "kind" {
         destination = "/tmp/kind_config.yaml"
     }
 
-    # copy github secret
+    # copy dockerconfig secret
     provisioner "file" {
         source      = ".dockerconfigjson"
         destination = "/tmp/.dockerconfigjson"
     }
 
-    # copy github token
+    # copy env
     provisioner "file" {
-        source      = ".token"
-        destination = "/tmp/.token"
+        source      = ".env"
+        destination = "/tmp/.env"
     }
 
-    # copy telegram token
-    provisioner "file" {
-        source      = ".tg_token"
-        destination = "/tmp/.tg_token"
-    }
+    # # copy github token
+    # provisioner "file" {
+    #     source      = ".token"
+    #     destination = "/tmp/.token"
+    # }
 
-    # copy telegram chat id
-    provisioner "file" {
-        source      = ".tg_chat_id"
-        destination = "/tmp/.tg_chat_id"
-    }
+    # # copy telegram token
+    # provisioner "file" {
+    #     source      = ".tg_token"
+    #     destination = "/tmp/.tg_token"
+    # }
+
+    # # copy telegram chat id
+    # provisioner "file" {
+    #     source      = ".tg_chat_id"
+    #     destination = "/tmp/.tg_chat_id"
+    # }
 
     # copy jenkins casc config
     provisioner "file" {

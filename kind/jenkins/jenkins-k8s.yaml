@@ -70,14 +70,19 @@ spec:
             value: "/var/jenkins_home/casc_configs"
           - name: JENKINS_ADMIN_ID
             value: "admin"
-          - name: JENKINS_ADMIN_PASSWORD
-            value: "!QAZ2wsx"
+          - name: JENKINS_PASSWORD
+            value: "${JENKINS_PASSWORD}"
           - name: JENKINS_URL
             value: "http://jenkins"
           - name: JENKINS_SA_TOKEN
             value: "${JENKINS_SA_TOKEN}"
-          - name: GITHUB_PAT
-            value: "${GITHUB_PAT}"
+          - name: GITHUB_TOKEN
+            value: "${GITHUB_TOKEN}"
+          # - name: GITHUB_TOKEN
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: jenkins-secret
+          #       value: github-token
           - name: TG_TOKEN
             value: "${TG_TOKEN}"
           # - name: TG_TOKEN

@@ -64,14 +64,6 @@ pipeline {
         TG_CHAT_ID = credentials('TG_CHAT_ID')
     }
 
-
-    // stages {
-    //     stage('Create List of Stages to run in Parallel') {
-    //         steps {
-    //             sh "echo HEllO FROM JENKINS"
-    //         }
-    //     }
-
     stages {
         // stage('Create List of Stages to run in Parallel') {
         //     steps {
@@ -87,6 +79,11 @@ pipeline {
         //     }
         // }
 
+        // stage('Create List of Stages to run in Parallel') {
+        //     steps {
+        //         sh "git"
+        //     }
+        // }
 
         stage('Helm list') {
             agent { kubernetes { yamlFile 'kind/jenkins/jenkins-kubectl-template.yaml' } }
