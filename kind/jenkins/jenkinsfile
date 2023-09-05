@@ -1,3 +1,5 @@
+import groovy.json.JsonBuilder
+
 podYaml= """
 kind: Pod
 metadata:
@@ -73,38 +75,58 @@ pipeline {
     }
 
     stages {
+        // stage('Prepare') {
+        //     steps {
+        //         script {
+        //             apps = readJSON file: APPS_FILE
+        //             CHANGED_APPS=[:]
+        //             DIFF = sh(script: 'cat kind/gitdiff.sh | bash', returnStdout: true).trim()
+        //             println DIFF
+        //             apps.each { app, path ->
+        //                 if (isChanged(DIFF, path)) {
+        //                     CHANGED_APPS.put(app, path)
+        //                 } 
+        //                 // else{
+        //                 //     CHANGED_APPS = apps
+        //                 // }
+        //             }
+        //             println CHANGED_APPS
+        //         }
+        //     }
+        // }
+        
         stage('Prepare') {
             steps {
                 script {
                     apps = readJSON file: APPS_FILE
-                    CHANGED_APPS=[:]
+                    CHANGED_APPS = [:]
                     DIFF = sh(script: 'cat kind/gitdiff.sh | bash', returnStdout: true).trim()
                     println DIFF
                     apps.each { app, path ->
-                        if (isChanged(DIFF, path)) {
+                        if (DIFF.contains(path)) {
                             CHANGED_APPS.put(app, path)
-                        } else{
-                            CHANGED_APPS = apps
                         }
-                        println CHANGED_APPS
+                    }
+                    println CHANGED_APPS
+                }
+            }
+        }
+
+        stage('Create List of Stages to run in Parallel') {
+            steps {
+                script {
+                    def jsonText = new JsonBuilder(CHANGED_APPS).toPrettyString()
+                    println(jsonText) // Вывести JSON-строку на экран
+                    Integer PARALLEL_EXECUTE_COUNT = 1
+                    //def apps = readFile('apps/apps.json')
+                    def map = readJSON text: jsonText
+                    //def map = ["productcatalogue" : "apps/productcatalogue" ,"shopfront" : "apps/shopfront", "stockmanager" : "apps/stockmanager"]
+                    parallel map.collectEntries { key, value ->
+                        ["${key}" : generateStage(key, value, PARALLEL_EXECUTE_COUNT, map.keySet().toList().indexOf(key))]
                     }
                 }
             }
         }
-        
-        // stage('Create List of Stages to run in Parallel') {
-        //     steps {
-        //         script {
-        //             Integer PARALLEL_EXECUTE_COUNT = 1
-        //             //def apps = readFile('apps/apps.json')
-        //             def map = readJSON text: CHANGED_APPS
-        //             //def map = ["productcatalogue" : "apps/productcatalogue" ,"shopfront" : "apps/shopfront", "stockmanager" : "apps/stockmanager"]
-        //             parallel map.collectEntries { key, value ->
-        //                 ["${key}" : generateStage(key, value, PARALLEL_EXECUTE_COUNT, map.keySet().toList().indexOf(key))]
-        //             }
-        //         }
-        //     }
-        // }
 
         // stage('Helm list') {
         //     agent { kubernetes { yamlFile 'kind/jenkins/jenkins-kubectl-template.yaml' } }

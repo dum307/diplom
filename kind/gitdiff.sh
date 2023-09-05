@@ -5,7 +5,7 @@
 changed_files=$(git diff --name-only --diff-filter=a HEAD HEAD~1)
 
 # Преобразуем список в формат JSON
-json_output="["
+json_output="{"
 first_file=true
 
 for file in $changed_files; do
@@ -17,7 +17,7 @@ for file in $changed_files; do
   fi
 done
 
-json_output+="]"
+json_output+="}"
 
 # Выводим JSON
 echo "$json_output"
