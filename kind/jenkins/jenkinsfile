@@ -105,6 +105,8 @@ pipeline {
                     apps.each { app, path ->
                         if (DIFF.contains(path)) {
                             CHANGED_APPS.put(app, path)
+                        } else {
+                            CHANGED_APPS = apps
                         }
                     }
                     println CHANGED_APPS
