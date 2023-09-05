@@ -55,4 +55,4 @@ unclassified:
     url: ${JENKINS_URL}
 
 jobs:
-  - file: /var/jenkins_home/casc_configs/seedjob2.groovy
+  - file: /var/jenkins_home/casc_configs/seedjob.groovy
