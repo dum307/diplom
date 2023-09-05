@@ -96,8 +96,8 @@ pipeline {
         //     steps {
         //         script {
         //             Integer PARALLEL_EXECUTE_COUNT = 1
-        //             def apps = readFile('apps/apps.json')
-        //             def map = readJSON text: apps
+        //             //def apps = readFile('apps/apps.json')
+        //             def map = readJSON text: CHANGED_APPS
         //             //def map = ["productcatalogue" : "apps/productcatalogue" ,"shopfront" : "apps/shopfront", "stockmanager" : "apps/stockmanager"]
         //             parallel map.collectEntries { key, value ->
         //                 ["${key}" : generateStage(key, value, PARALLEL_EXECUTE_COUNT, map.keySet().toList().indexOf(key))]
