@@ -21,9 +21,8 @@ security:
     sshHostKeyVerificationStrategy: "acceptFirstConnectionStrategy"
   scriptApproval:
     approvedSignatures:
-    - "method groovy.lang.GroovyObject invokeMethod java.lang.String java.lang.Object"
-    - "staticMethod org.codehaus.groovy.runtime.DefaultGroovyMethods getAt java.lang.Object\
-      \ java.lang.String"
+    - "new groovy.json.JsonBuilder java.lang.Object"
+    - "method groovy.json.JsonBuilder toPrettyString"
 
 credentials:
   system:
