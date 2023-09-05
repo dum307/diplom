@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Получаем список измененных и созданных файлов между последним и предпоследним коммитами
-changed_files=$(git diff --name-only --diff-filter=ACM HEAD HEAD~1)
+#changed_files=$(git diff --name-only --diff-filter=ACM HEAD HEAD~1)
+changed_files=$(git diff --name-only --diff-filter=a HEAD HEAD~1)
 
 # Преобразуем список в формат JSON
 json_output="["
