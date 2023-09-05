@@ -46,6 +46,14 @@ def generateStage(app, path, parallel_count, jobIndex) {
     }
 }
 
+def isChanged(diff, path) {
+    for (file in diff) {
+        if (file =~ path) {
+            return true
+        }
+    }
+}
+
 
 pipeline {
     agent { label 'master' }
@@ -58,78 +66,91 @@ pipeline {
     }
 
     environment {
-        // SERVICES_FILE = 'apps/services.json'
+        APPS_FILE = 'apps/apps.json'
         RELEASE_NAME = "app"
         TG_TOKEN = credentials('TG_TOKEN')
         TG_CHAT_ID = credentials('TG_CHAT_ID')
     }
 
     stages {
-        stage('Create List of Stages to run in Parallel') {
+        stage('Prepare') {
             steps {
                 script {
-                    Integer PARALLEL_EXECUTE_COUNT = 1
-                    def apps = readFile('apps/apps.json')
-                    def map = readJSON text: apps
-                    //def map = ["productcatalogue" : "apps/productcatalogue" ,"shopfront" : "apps/shopfront", "stockmanager" : "apps/stockmanager"]
-                    parallel map.collectEntries { key, value ->
-                        ["${key}" : generateStage(key, value, PARALLEL_EXECUTE_COUNT, map.keySet().toList().indexOf(key))]
+                    apps = readJSON file: APPS_FILE
+                    CHANGED_APPS=[:]
+                    DIFF = sh(script: 'cat kind/gitdiff.sh | bash', returnStdout: true).trim()
+                    println DIFF
+                    apps.each { app, path ->
+                        if (isChanged(DIFF, path)) {
+                            CHANGED_APPS.put(app, path)
+                        } else{
+                            CHANGED_APPS = apps
+                        }
+                        println CHANGED_APPS
                     }
                 }
             }
         }
-
+        
         // stage('Create List of Stages to run in Parallel') {
         //     steps {
-        //         sh "git"
+        //         script {
+        //             Integer PARALLEL_EXECUTE_COUNT = 1
+        //             def apps = readFile('apps/apps.json')
+        //             def map = readJSON text: apps
+        //             //def map = ["productcatalogue" : "apps/productcatalogue" ,"shopfront" : "apps/shopfront", "stockmanager" : "apps/stockmanager"]
+        //             parallel map.collectEntries { key, value ->
+        //                 ["${key}" : generateStage(key, value, PARALLEL_EXECUTE_COUNT, map.keySet().toList().indexOf(key))]
+        //             }
+        //         }
         //     }
         // }
 
-        stage('Helm list') {
-            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-kubectl-template.yaml' } }
-            steps {
-                script {
-                    container(name: 'kubectl') {
-                        IS_CHART_RELEASED = false
-                        log = sh(returnStdout: true, script: "helm list --no-headers").trim()
-                        println log
-                        log.readLines().collect { line ->
-                            if (line =~ RELEASE_NAME) {
-                                IS_CHART_RELEASED = true
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Helm list') {
+        //     agent { kubernetes { yamlFile 'kind/jenkins/jenkins-kubectl-template.yaml' } }
+        //     steps {
+        //         script {
+        //             container(name: 'kubectl') {
+        //                 IS_CHART_RELEASED = false
+        //                 log = sh(returnStdout: true, script: "helm list -n ${BRANCH_NAME} --no-headers").trim()
+        //                 println log
+        //                 log.readLines().collect { line ->
+        //                     if (line =~ RELEASE_NAME) {
+        //                         IS_CHART_RELEASED = true
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
 
-        stage('Telegram message') {
-            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
-            steps {
-                sh '''
-                curl -s -X POST https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID} --data-urlencode text="Need your approve"
-                '''
-            }
-        }
+        // stage('Telegram message') {
+        //     agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+        //     steps {
+        //         sh '''
+        //         curl -s -X POST https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID} --data-urlencode text="Need your approve"
+        //         '''
+        //     }
+        // }
 
-        stage('Helm install') {
-            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-kubectl-template.yaml' } }
-            steps {
-                timeout(time: 15, unit: "MINUTES") {
-                    input message: "Confirm plan?", ok: "Apply"
-                }
-                script {
-                    container(name: 'kubectl') {
-                        if (IS_CHART_RELEASED) {
-                            sh "helm upgrade ${RELEASE_NAME} app-chart/ -n ${BRANCH_NAME} --set image.tag=v${BUILD_NUMBER}"
-                        } else {
-                            sh "helm install ${RELEASE_NAME} app-chart/ -n ${BRANCH_NAME} --set image.tag=v${BUILD_NUMBER}"
-                        }
-                    }
-                }        
-            }
-        }
+        // stage('Helm install') {
+        //     agent { kubernetes { yamlFile 'kind/jenkins/jenkins-kubectl-template.yaml' } }
+        //     steps {
+        //         timeout(time: 15, unit: "MINUTES") {
+        //             input message: "Confirm plan?", ok: "Apply"
+        //         }
+        //         script {
+        //             container(name: 'kubectl') {
+        //                 if (IS_CHART_RELEASED) {
+        //                     sh "helm upgrade ${RELEASE_NAME} app-chart/ -n ${BRANCH_NAME} --set image.tag=v${BUILD_NUMBER}"
+        //                 } else {
+        //                     sh "helm install ${RELEASE_NAME} app-chart/ -n ${BRANCH_NAME} --set image.tag=v${BUILD_NUMBER}"
+        //                 }
+        //             }
+        //         }        
+        //     }
+        // }
 
     }
     post {
