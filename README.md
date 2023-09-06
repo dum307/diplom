@@ -84,6 +84,35 @@ terraform init
 ```
 terraform apply --auto-approve
 ```
+**После запуска проекта в аутпутах мы получим ip-адрес виртуальной машин. Его необходимо добавить в hosts**
+```
+<ip-адрес> jenkins
+<ip-адрес> prometheus
+<ip-адрес> blackbox
+```
+
+## Доступ к проекту
+- После редактирования hosts можно зайти на каждый сервис по dns именам
+**prometheus и blackbox автоматически не запускается ввиду нехватки ресурсов виртуальной машины**
+
+## Мониторинг
+- Для мониторинга kubernetes устанавливается prometheus
+- Для мониторинга приложения устанавливается blackbox exporter
+
+- установка prometheus и blackbox exporter:
+Переходим в директорию prometheus и запускаем следующие команды:
+```
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install -f prometheus.yaml prometheus prometheus-community/kube-prometheus-stack -n monitoring
+helm install -f blackbox.yaml blackbox prometheus-community/prometheus-blackbox-exporter -n monitoring
+```
+
+## Удалить проект
+- Перейти в директорию kind и проинициализировать terraform
+```
+terraform destroy --auto-approve
+```
 
 
 ------------------------------
