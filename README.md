@@ -10,30 +10,87 @@ Helm-сhart для развёртывания приложения
 - **prometheus**
 Конфигурация prometheus
 - **terraform+kubespray**
-Конфигурация рабочая, но в проекте не использовалась ввиду долгого запуска.
+(опционально)Конфигурация рабочая, но в проекте не использовалась ввиду долгого запуска.
 Вместо kubespray kubernetes запускается в kind
 
-# Перед установкой кубернетеса.
+## Краткое описание работы проекта:
+- Инфраструктура описана в terraform и запускается в AWS.
+- При запуске виртуальной машины, запускается скрипт init.sh, который устанавливается kind и запускает kubernetes кластер.
+- В kubernetes создаются:
+    * устанавливается nginx-ingress controller
+    * неймспейсы jenkins (для запуска jenkins server и создания агентов), monitoring (для prometheus), main и dev (для развёртывания приложения веток main и dev оответственно).
+    * необходимые секреты
+    * устанавливается jenkins server и конфигурируется из кода
+- В jenkins server запускается multibranch pipeline, который отслеживает ветки main и dev.
+- Пайплайн организован следующим образом:
+    * стэйджи: Prepare, Create List of Stages to run in Parallel, Helm list, Telegram message, Helm install и post actions.
+        - Prepare - подготавливает список приложений, которые необходимо собрать
+        - Create List of Stages to run in Parallel - создаёт список стейджей их запуска параллельно; устанавливает количество одновременно запускаемых стейджей
+        - Helm list - проверяет установлено ли приложение
+        - Telegram message - отправляет сообщение в телеграм о необходимости подтвердить установку приложения
+        - Helm install - устанавливает либо обновляет приложение в зависимости от значения переменной IS_CHART_RELEASED
+        - post - реализована отправка сообщения в телеграм по результатам сборки и очистка рабочего пространства
+
+## Перед запуском проекта необходимо:
+- Установить awscli
+```
+$ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+```
+- Настроить профиль aws
+```
+aws configure --profile <имя профиля>
+```
+- Активировать профиль aws
+```
+export AWS_PROFILE=<имя профиля>
+```
+- Установить Terraform
+https://developer.hashicorp.com/terraform/downloads
+```
+wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt install terraform
+```
+- Сгенерировать ssh-ключ и положить в файл kind/key.tf
+- Создать файл .env по аналогии с .env_example и в нём указать необходимые переменые, а именно: GITHUB_TOKEN, TG_TOKEN, TG_CHAT_ID, JENKINS_PASSWORD
+- Создать токен доступа гитхаб с доступом на чтение и запись пакетов
+- Создать файл .dockerconfigjson по инструкции ниже. Необходимо использовать логин github и токен доступа.
+
+```
+echo -n "username:123123adsfasdf123123" | base64
+dXNlcm5hbWU6MTIzMTIzYWRzZmFzZGYxMjMxMjM=
+```
+Create file with contant:
+```bash
+{
+    "auths":
+    {
+        "ghcr.io":
+            {
+                "auth":"dXNlcm5hbWU6MTIzMTIzYWRzZmFzZGYxMjMxMjM="
+            }
+    }
+}
+```
+
+## Запуск проекта
+- Перейти в директорию kind и проинициализировать terraform
+```
+terraform init
+```
+- Применить конфигурацию terraform
+```
+terraform apply --auto-approve
+```
 
 
-sudo apt-get install python3.9-venv
-python3.9 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+------------------------------
 
-sudo cp kubectl /usr/local/bin/
-cp admin.conf ~/.kube/.kubeconfig
-
-helm install -f nginx-helm-vars.yaml ingress-nginx ingress-nginx/ingress-nginx --kube-insecure-skip-tls-verify
-alias kubectl='kubectl --insecure-skip-tls-verify=true'
-kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
-
-
-# кубернетес запускается в kind
-перед запуском:
 закинуть ssh ключ в файл key.tf
 создать файлик .token с токеном от гитхаба
-создать два файлика .tg_token и .tg_chat_id - токен и чат id телеграма 
+env
 создать секрет для гитхаба для скачивания из докер реестра
 
 

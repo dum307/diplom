@@ -20,7 +20,7 @@ multibranchPipelineJob('CI-CD') {
                             strategyId(1)
                         }
                         headWildcardFilter {
-                            includes('main PR-* dev')
+                            includes('main dev')
                             excludes('')
                         }
                         cloneOption {

@@ -43,6 +43,9 @@ sudo kubectl -n main create secret generic github --from-file=.dockerconfigjson=
 sudo kubectl create namespace dev
 sudo kubectl -n dev create secret generic github --from-file=.dockerconfigjson=/home/ubuntu/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
 
+# create namespace for monitoring
+sudo kubectl create namespace monitoring
+
 # create config file for jenkins pod
 sudo bash -c "mkdir /root/.kube/jenkins/ && cp /root/.kube/config /root/.kube/jenkins/config && sed -i 's#https://0.0.0.0:6443#https://kubernetes.default.svc#g' /root/.kube/jenkins/config"
 sudo kubectl -n jenkins create secret generic kube-config-secret --from-file=/root/.kube/jenkins/config

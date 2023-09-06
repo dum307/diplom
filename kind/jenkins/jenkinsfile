@@ -66,26 +66,6 @@ pipeline {
     }
 
     stages {
-        // stage('Prepare') {
-        //     steps {
-        //         script {
-        //             apps = readJSON file: APPS_FILE
-        //             CHANGED_APPS=[:]
-        //             DIFF = sh(script: 'cat kind/gitdiff.sh | bash', returnStdout: true).trim()
-        //             println DIFF
-        //             apps.each { app, path ->
-        //                 if (isChanged(DIFF, path)) {
-        //                     CHANGED_APPS.put(app, path)
-        //                 } 
-        //                 // else{
-        //                 //     CHANGED_APPS = apps
-        //                 // }
-        //             }
-        //             println CHANGED_APPS
-        //         }
-        //     }
-        // }
-        
         stage('Prepare') {
             steps {
                 script {
@@ -142,7 +122,7 @@ pipeline {
 
 
         stage('Telegram message') {
-            agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
+            //agent { kubernetes { yamlFile 'kind/jenkins/jenkins-pod-template.yaml' } }
             steps {
                 sh '''
                 curl -s -X POST https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID} --data-urlencode text="Need your approve"
