@@ -29,8 +29,8 @@ nodes:
     protocol: TCP
 - role: worker
   extraMounts:
-  - hostPath: /tmp/casc_configs
-    containerPath: /tmp/casc_configs
+  - hostPath: /home/ubuntu/casc_configs
+    containerPath: /home/ubuntu/casc_configs
   # extraPortMappings:
   # - containerPort: 30100
   #   hostPort: 30100
@@ -44,8 +44,8 @@ nodes:
         node-labels: "nodePort=true"
 - role: worker
   extraMounts:
-  - hostPath: /tmp/casc_configs
-    containerPath: /tmp/casc_configs  
+  - hostPath: /home/ubuntu/casc_configs
+    containerPath: /home/ubuntu/casc_configs  
   # extraPortMappings:
   # - containerPort: 80
   #   hostPort: 80

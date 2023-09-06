@@ -161,7 +161,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: /tmp/jenkins
+    path: /home/ubuntu/jenkins
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -179,7 +179,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: /tmp/casc_configs
+    path: /home/ubuntu/casc_configs
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

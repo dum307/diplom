@@ -30,35 +30,33 @@ chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 
 # create kind cluster
-sudo kind create cluster --config /tmp/kind_config.yaml
+sudo kind create cluster --config /home/ubuntu/kind_config.yaml
 
 # install nginx ingress controller
 sudo kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
 
 # create github secret
 sudo kubectl create namespace jenkins
-sudo kubectl -n jenkins create secret generic github --from-file=.dockerconfigjson=/tmp/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
+sudo kubectl -n jenkins create secret generic github --from-file=.dockerconfigjson=/home/ubuntu/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
 sudo kubectl create namespace main
-sudo kubectl -n main create secret generic github --from-file=.dockerconfigjson=/tmp/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
+sudo kubectl -n main create secret generic github --from-file=.dockerconfigjson=/home/ubuntu/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
 sudo kubectl create namespace dev
-sudo kubectl -n dev create secret generic github --from-file=.dockerconfigjson=/tmp/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
+sudo kubectl -n dev create secret generic github --from-file=.dockerconfigjson=/home/ubuntu/.dockerconfigjson --type=kubernetes.io/dockerconfigjson
 
 # create config file for jenkins pod
 sudo bash -c "mkdir /root/.kube/jenkins/ && cp /root/.kube/config /root/.kube/jenkins/config && sed -i 's#https://0.0.0.0:6443#https://kubernetes.default.svc#g' /root/.kube/jenkins/config"
 sudo kubectl -n jenkins create secret generic kube-config-secret --from-file=/root/.kube/jenkins/config
 
 # create jenkins SA and get token
-sudo kubectl apply -f /tmp/jenkins-sa-k8s.yaml
+sudo kubectl apply -f /home/ubuntu/jenkins-sa-k8s.yaml
 export JENKINS_SA_TOKEN=$(sudo kubectl -n jenkins get secret jenkins-sa-token -o jsonpath='{.data.token}' | base64 --decode)
 
 # load .env for jenkins deployment
-source /tmp/.env
+source /home/ubuntu/.env
 export GITHUB_TOKEN
 export TG_TOKEN
 export TG_CHAT_ID
 export JENKINS_PASSWORD
-#envsubst < jenkins/jenkins-secret-template.yaml > jenkins/jenkins-secret.yaml
-#sudo kubectl apply -f jenkins/jenkins-secret.yaml
 
 # env for jcasc
 # export JCASC_GITHUB_TOKEN=$(echo "${GITHUB_TOKEN}" | base64 -d)
@@ -68,4 +66,4 @@ export JENKINS_PASSWORD
 
 # install jenkins
 sleep 60
-envsubst < /tmp/jenkins-k8s.yaml | sudo kubectl apply -f -
+envsubst < /home/ubuntu/jenkins-k8s.yaml | sudo kubectl apply -f -

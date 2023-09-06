@@ -43,61 +43,43 @@ resource "aws_instance" "kind" {
     # copy kind config
     provisioner "file" {
         source      = "kind_config.yaml"
-        destination = "/tmp/kind_config.yaml"
+        destination = "/home/ubuntu/kind_config.yaml"
     }
 
     # copy dockerconfig secret
     provisioner "file" {
         source      = ".dockerconfigjson"
-        destination = "/tmp/.dockerconfigjson"
+        destination = "/home/ubuntu/.dockerconfigjson"
     }
 
     # copy env
     provisioner "file" {
         source      = ".env"
-        destination = "/tmp/.env"
+        destination = "/home/ubuntu/.env"
     }
-
-    # # copy github token
-    # provisioner "file" {
-    #     source      = ".token"
-    #     destination = "/tmp/.token"
-    # }
-
-    # # copy telegram token
-    # provisioner "file" {
-    #     source      = ".tg_token"
-    #     destination = "/tmp/.tg_token"
-    # }
-
-    # # copy telegram chat id
-    # provisioner "file" {
-    #     source      = ".tg_chat_id"
-    #     destination = "/tmp/.tg_chat_id"
-    # }
 
     # copy jenkins casc config
     provisioner "file" {
         source      = "jenkins/casc_configs"
-        destination = "/tmp/casc_configs"
+        destination = "/home/ubuntu/casc_configs"
     }
 
     # copy config jenkins for deploy in k8s
     provisioner "file" {
         source      = "jenkins/jenkins-sa-k8s.yaml"
-        destination = "/tmp/jenkins-sa-k8s.yaml"
+        destination = "/home/ubuntu/jenkins-sa-k8s.yaml"
     }
 
     # copy config jenkins for deploy in k8s
     provisioner "file" {
         source      = "jenkins/jenkins-k8s.yaml"
-        destination = "/tmp/jenkins-k8s.yaml"
+        destination = "/home/ubuntu/jenkins-k8s.yaml"
     }
 
     # copy prometeus config
     provisioner "file" {
         source      = "../prometheus"
-        destination = "/tmp/prometheus"
+        destination = "/home/ubuntu/prometheus"
     }
 
     # start init script
@@ -106,29 +88,3 @@ resource "aws_instance" "kind" {
     }
 
 }
-
-
-
-
-
-
-# resource "null_resource" "copy_kubeconfig" {
-#   provisioner "local-exec" {
-#       command = "sed -i 's/${aws_instance.master[0].private_ip}/${aws_instance.master[0].public_ip}/g' kubespray/inventory/k8s-cluster/artifacts/admin.conf && cp kubespray/inventory/k8s-cluster/artifacts/admin.conf ~/.kube/.kubeconfig"
-#   }
-
-#   depends_on = [
-#     null_resource.install_k8s
-#   ]
-# }
-
-# resource "null_resource" "install_ingress_controller" {
-#   provisioner "local-exec" {
-#       command = "kubectl --insecure-skip-tls-verify=true taint nodes k8s-ingress-0 node.kubernetes.io/ingress=:NoSchedule && helm install -f nginx-helm-vars.yaml ingress-nginx ingress-nginx/ingress-nginx --kube-insecure-skip-tls-verify"
-#   }
-
-#   depends_on = [
-#     null_resource.copy_kubeconfig
-#   ]
-# }
-
