@@ -34,8 +34,7 @@ def generateStage(app, path, parallel_count, jobIndex) {
                 podTemplate(yaml:podYaml)  {
                     node(POD_LABEL) {
                         container(name: 'kaniko') {
-                            //checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[credentialsId: 'github-http', url: 'https://github.com/dum307/diplom.git']]])
-                            checkout([$class: 'GitSCM', userRemoteConfigs: [[credentialsId: 'github-http', url: 'https://github.com/dum307/diplom.git']]])
+                            checkout([$class: 'GitSCM', branches: [[name: '${BRANCH_NAME}']], userRemoteConfigs: [[credentialsId: 'github-http', url: 'https://github.com/dum307/diplom.git']]])
                             // Each execution runs on its own node (pod)
                             sh """
                             /kaniko/executor --dockerfile=${path}/Dockerfile-build --context=${path}/ --destination=ghcr.io/dum307/${app}:v${BUILD_NUMBER} --ignore-path=/product_uuid
