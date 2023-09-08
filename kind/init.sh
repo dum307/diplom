@@ -46,7 +46,7 @@ sudo kubectl -n dev create secret generic github --from-file=.dockerconfigjson=/
 # create namespace for monitoring
 sudo kubectl create namespace monitoring
 
-# create config file for jenkins pod
+# create kubectl config file for jenkins pod
 sudo bash -c "mkdir /root/.kube/jenkins/ && cp /root/.kube/config /root/.kube/jenkins/config && sed -i 's#https://0.0.0.0:6443#https://kubernetes.default.svc#g' /root/.kube/jenkins/config"
 sudo kubectl -n jenkins create secret generic kube-config-secret --from-file=/root/.kube/jenkins/config
 
@@ -60,12 +60,6 @@ export GITHUB_TOKEN
 export TG_TOKEN
 export TG_CHAT_ID
 export JENKINS_PASSWORD
-
-# env for jcasc
-# export JCASC_GITHUB_TOKEN=$(echo "${GITHUB_TOKEN}" | base64 -d)
-# export JCASC_TG_TOKEN=$(echo "${TG_TOKEN}" | base64 -d)
-# export JCASC_TG_CHAT_ID=$(echo "${TG_CHAT_ID}" | base64 -d)
-# export JCASC_JENKINS_PASSWORD=$(echo "${JENKINS_PASSWORD}" | base64 -d)
 
 # install jenkins
 sleep 60
