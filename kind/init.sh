@@ -70,3 +70,12 @@ export JENKINS_PASSWORD
 # install jenkins
 sleep 60
 envsubst < /home/ubuntu/jenkins-k8s.yaml | sudo kubectl apply -f -
+
+# install helm
+# sudo bash -c 'curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash'
+
+# install prometheus and blackbox exporter
+# sudo helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+# sudo helm repo update
+# sudo helm install -f /home/ubuntu/prometheus/blackbox.yaml blackbox prometheus-community/prometheus-blackbox-exporter -n monitoring
+# sudo helm install -f /home/ubuntu/prometheus/prometheus.yaml prometheus prometheus-community/kube-prometheus-stack -n monitoring

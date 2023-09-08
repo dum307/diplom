@@ -8,13 +8,6 @@ prometheus:
       - /
   prometheusSpec:
     additionalScrapeConfigs: |
-      - job_name: 'app'
-        static_configs:
-          - targets:
-            - 'shopfront.main.svc.cluster.local:8010'
-            - 'productcatalogue.main.svc.cluster.local:8020'
-            - 'stockmanager.main.svc.cluster.local:8030'
-  
       - job_name: 'blackbox'
         metrics_path: /probe
         params:
