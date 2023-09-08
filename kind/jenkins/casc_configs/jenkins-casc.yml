@@ -23,6 +23,22 @@ security:
     approvedSignatures:
     - "new groovy.json.JsonBuilder java.lang.Object"
     - "method groovy.json.JsonBuilder toPrettyString"
+tool:
+  git:
+    installations:
+    - home: "git"
+      name: "Default"
+  maven:
+    installations:
+    - name: "maven3"
+      properties:
+      - installSource:
+          installers:
+          - maven:
+              id: "3.8.6"
+  mavenGlobalConfig:
+    globalSettingsProvider: "standard"
+    settingsProvider: "standard"
 
 credentials:
   system:

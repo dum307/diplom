@@ -33,3 +33,4 @@ custom-tools-plugin:latest
 telegram-notifications:latest
 pipeline-utility-steps:latest
 lockable-resources:latest
+pipeline-maven:latest
